@@ -1,0 +1,17 @@
+astroid==2.9.0
+chardet==4.0.0
+isort==5.10.1
+lazy-object-proxy==1.6.0
+mccabe==0.6.1
+pdfminer.six==20200517
+pdfplumber==0.5.28
+Pillow==8.4.0
+pkg_resources==0.0.0
+platformdirs==2.4.0
+pycryptodome==3.11.0
+pylint==2.12.1
+sortedcontainers==2.4.0
+toml==0.10.2
+typing_extensions==4.0.0
+Wand==0.6.7
+wrapt==1.13.3
