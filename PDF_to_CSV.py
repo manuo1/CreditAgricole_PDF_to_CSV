@@ -44,7 +44,10 @@ def file_path(sub_folder_name, file_name, extension):
     return os.path.join(
         FOLDER_PATH, sub_folder_name, f'{file_name}.{extension}'
     )
-
+def clean_label(label):
+    while "  " in label:
+        label = label.replace("  "," ")
+    return label
 
 def pdf_filenames():
     """
@@ -88,6 +91,7 @@ def format(raw_list):
                     next_row_label = next_row[2]
                     label = f'{label} {next_row_label}' 
                 value = value_in_raw_row(row)
+                label = clean_label(label)
                 row_to_add = [date, value_date, value, label]
                 # return an empty rows_list and stop conversion if not  
                 # all field are present in the row to add
@@ -135,7 +139,9 @@ def build_csv_file(global_csv):
 
 def main():
     global_csv = []
-    for file in sorted(pdf_filenames()):
+    extracted_pdf_done = 0
+    filenames_list = sorted(pdf_filenames())
+    for file in filenames_list:
         print(f'\n{file}')
         pdf_path = file_path(PDF_SUB_FOLDER_NAME, file, 'pdf')
         page_rows = []
@@ -146,11 +152,12 @@ def main():
         formatted_list = format(page_rows)
         if formatted_list:
             global_csv += formatted_list
-        print(f'--> DONE\n')
+            extracted_pdf_done +=1
+        print(f'--> DONE  ({extracted_pdf_done}/{len(filenames_list)})\n')
     if build_csv_file(global_csv):
         print(
-            f'csv file created:\n\n'
-            f'{file_path(CSV_SUB_FOLDER_NAME, "global_csv","csv")}\n'
+            f'csv file created: \"'
+            f'{file_path(CSV_SUB_FOLDER_NAME, "global_csv","csv")}\"\n'
         )
 if __name__ == '__main__':
     main()
