@@ -7,6 +7,9 @@ PDF_SUB_FOLDER_NAME = "PDF"
 CSV_SUB_FOLDER_NAME = "CSV"
 DATE_IN_CSV_ROWS_FORMAT = '%d/%m/%Y' 
 # %d/%m/%Y <=> day/month/year ex: 25/12/2021
+TABLES_HEADERS = [
+     ['Date', 'Date valeur', 'Opération', 'Débit EUROS', 'Crédit EUROS'],
+]
 
 def value_in_raw_row(row):
     """
@@ -135,10 +138,14 @@ def main():
     for file in sorted(pdf_filenames()):
         print(f'\n{file}')
         pdf_path = file_path(PDF_SUB_FOLDER_NAME, file, 'pdf')
+        page_rows = []
         for table in tables_in_pdf(pdf_path):
-            formatted_list = format(table)
-            if formatted_list:
-                global_csv += formatted_list
+            for row in table:
+                if len(row) == 5 and row not in TABLES_HEADERS:
+                    page_rows.append(row)
+        formatted_list = format(page_rows)
+        if formatted_list:
+            global_csv += formatted_list
         print(f'--> DONE\n')
     if build_csv_file(global_csv):
         print(
