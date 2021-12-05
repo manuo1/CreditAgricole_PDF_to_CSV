@@ -1,15 +1,18 @@
-import csv, os, pdfplumber
+import csv
+import os
+import pdfplumber
 from datetime import datetime
 from pathlib import Path
 
 FOLDER_PATH = Path(__file__).resolve().parent
 PDF_SUB_FOLDER_NAME = "PDF"
 CSV_SUB_FOLDER_NAME = "CSV"
-DATE_IN_CSV_ROWS_FORMAT = '%d/%m/%Y' 
+DATE_IN_CSV_ROWS_FORMAT = '%d/%m/%Y'
 # %d/%m/%Y <=> day/month/year ex: 25/12/2021
 TABLES_HEADERS = [
-     ['Date', 'Date valeur', 'Opération', 'Débit EUROS', 'Crédit EUROS'],
+    ['Date', 'Date valeur', 'Opération', 'Débit EUROS', 'Crédit EUROS'],
 ]
+
 
 def value_in_raw_row(row):
     """
@@ -23,8 +26,9 @@ def value_in_raw_row(row):
     if row[4] and not row[3]:
         value = row[4]
     # replace numeric decimal value separator
-    value = value.replace(".","")
+    value = value.replace(".", "")
     return value
+
 
 def string_is_date(str_date):
     """
@@ -37,6 +41,7 @@ def string_is_date(str_date):
     except:
         return None
 
+
 def file_path(sub_folder_name, file_name, extension):
     """
     returns the file path whatever the os 
@@ -44,10 +49,13 @@ def file_path(sub_folder_name, file_name, extension):
     return os.path.join(
         FOLDER_PATH, sub_folder_name, f'{file_name}.{extension}'
     )
+
+
 def clean_label(label):
     while "  " in label:
-        label = label.replace("  "," ")
+        label = label.replace("  ", " ")
     return label
+
 
 def pdf_filenames():
     """
@@ -59,6 +67,7 @@ def pdf_filenames():
         if "pdf" in extension.lower():
             filenames.append(filename)
     return filenames
+
 
 def format(raw_list):
     """
@@ -76,7 +85,7 @@ def format(raw_list):
         will return an empty list if something is wrong during the conversion
     """
     rows_list = []
-    for index,row in enumerate(raw_list):
+    for index, row in enumerate(raw_list):
         if len(row) == 5 and string_is_date(row[0]):
             try:
                 next_row = ["not empty"]*5
@@ -85,15 +94,15 @@ def format(raw_list):
                 date = row[0]
                 value_date = row[1]
                 label = row[2]
-                # if row[0] is a date and the row[0] in the next row is 
-                # empty : the label is on TWO row   
+                # if row[0] is a date and the row[0] in the next row is
+                # empty : the label is on TWO row
                 if string_is_date(row[0]) and not next_row[0]:
                     next_row_label = next_row[2]
-                    label = f'{label} {next_row_label}' 
+                    label = f'{label} {next_row_label}'
                 value = value_in_raw_row(row)
                 label = clean_label(label)
                 row_to_add = [date, value_date, value, label]
-                # return an empty rows_list and stop conversion if not  
+                # return an empty rows_list and stop conversion if not
                 # all field are present in the row to add
                 if all(field for field in row_to_add):
                     rows_list.append(row_to_add)
@@ -103,39 +112,43 @@ def format(raw_list):
                         f'one or more field are missing'
                     )
                     rows_list = []
-                    break                        
+                    break
             except Exception as problem:
                 print(f'!!! problem with row {index} : {row}\n{problem}')
                 rows_list = []
-                
+
     return rows_list
+
 
 def tables_in_pdf(pdf_path):
     tables = []
     with pdfplumber.open(pdf_path) as pdf:
         for page in pdf.pages:
-            for table in page.extract_tables():    
+            for table in page.extract_tables():
                 tables.append(table)
     return tables
+
 
 def file_exist(path_checked):
     """ 
     return True if file exist
     """
-    return os.path.isfile(path_checked) 
+    return os.path.isfile(path_checked)
+
 
 def build_csv_file(global_csv):
     """
     buil the csv file
     """
-    new_csv_file = file_path(CSV_SUB_FOLDER_NAME, "global_csv","csv")
-    with open(new_csv_file, "w", newline="") as csv_file :
+    new_csv_file = file_path(CSV_SUB_FOLDER_NAME, "global_csv", "csv")
+    with open(new_csv_file, "w", newline="") as csv_file:
         new_file = csv.writer(csv_file, delimiter=";")
         for row in global_csv:
             new_file.writerow(row)
     if file_exist(new_csv_file):
         return True
     return False
+
 
 def main():
     global_csv = []
@@ -152,12 +165,14 @@ def main():
         formatted_list = format(page_rows)
         if formatted_list:
             global_csv += formatted_list
-            extracted_pdf_done +=1
+            extracted_pdf_done += 1
         print(f'--> DONE  ({extracted_pdf_done}/{len(filenames_list)})\n')
     if build_csv_file(global_csv):
         print(
             f'csv file created: \"'
             f'{file_path(CSV_SUB_FOLDER_NAME, "global_csv","csv")}\"\n'
         )
+
+
 if __name__ == '__main__':
     main()
