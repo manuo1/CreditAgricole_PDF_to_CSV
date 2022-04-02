@@ -1,4 +1,6 @@
-Simple python script to convert bank transactions contained in "Crédit Agricole" bank statements (PDF format) into a CSV file
+Simple python script to convert bank transactions contained in "Crédit Mutuel" bank statements (PDF format) into a CSV file
+
+(May work with other banks but not tested)
 
 How to use :
 
